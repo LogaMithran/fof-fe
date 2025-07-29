@@ -16,7 +16,7 @@ const MapBoundry = ({userName}) => {
     const [nearByFriends, setNearbyFriends] = useState([])
 
     const {refresh} = useContext(MapContext)
-    const ws = new WebSocket("ws://fof-be.onrender.com:8080/ws");
+    const ws = new WebSocket("wss://fof-be.onrender.com:443/ws");
 
     ws.onopen = function () {
         console.log("Connected to WebSocket server");
