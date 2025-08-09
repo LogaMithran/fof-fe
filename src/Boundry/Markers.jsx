@@ -1,9 +1,9 @@
 import {AdvancedMarker, Pin, useMap} from "@vis.gl/react-google-maps";
 import {useCallback, useEffect, useRef, useState} from "react";
 import {MarkerClusterer} from "@googlemaps/markerclusterer";
+import {renderToString} from "react-dom/server";
 
 export const Markers = ({marks, isSelf = false}) => {
-    console.log(isSelf)
     const map = useMap();
     const [markers, setMarkers] = useState({});
     const clusterer = useRef(null);
@@ -43,19 +43,26 @@ export const Markers = ({marks, isSelf = false}) => {
         });
     };
 
-    return (
-        <>
-            {marks.map((poi) => (
-                <AdvancedMarker
-                    key={poi.key}
-                    position={poi.location}
-                    ref={marker => setMarkerRef(marker, poi.key)}
-                    clickable={true}
-                    onClick={handleClick}
+    return (<>
+        {marks.map((poi) => (<AdvancedMarker
+            key={poi.key}
+            position={poi.location}
+            ref={marker => setMarkerRef(marker, poi.key)}
+            clickable={true}
+            onClick={handleClick}
+        >
+            <div style={{transform: 'scale(1.5)'}}>
+                <Pin
+                    background={isSelf ? '#00FF00' : '#FF0000'}
+                    borderColor="#000"
+                    glyph={poi?.userName}
+                    glyphColor="#000"
+                    scale={1.5} // 👈 this increases the pin size
                 >
-                    <Pin background={isSelf ? '#00FF00' : '#FF0000'} glyphColor={'#000'} borderColor={'#000'}/>
-                </AdvancedMarker>
-            ))}
-        </>
-    );
+                </Pin>
+
+
+            </div>
+        </AdvancedMarker>))}
+    </>);
 };

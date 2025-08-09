@@ -4,7 +4,8 @@ import {APIProvider, Map} from '@vis.gl/react-google-maps';
 import {Markers} from "./Markers.jsx";
 import axios from "axios";
 import MapContext from "./mapContext.jsx";
-import {BACKEND_URL} from "../utils/constants.js";
+import {BACKEND_URL, MAPS_API_KEY, WEBSOCKET_URI} from "../utils/constants.js";
+import {storage} from "../utils/storage.js";
 
 const options = {
     enableHighAccuracy: true, timeout: 5000, maximumAge: 0,
@@ -16,15 +17,15 @@ const MapBoundry = ({userName}) => {
     const [nearByFriends, setNearbyFriends] = useState([])
 
     const {refresh} = useContext(MapContext)
-    const ws = new WebSocket("wss://fof-be.onrender.com:443/ws");
+    const ws = new WebSocket(WEBSOCKET_URI);
 
-    ws.onopen = function () {
-        console.log("Connected to WebSocket server");
-    };
+    ws.onmessage = ((ev) => {
+        console.log(ev)
+    })
 
     const success = async (cords) => {
         const {latitude, longitude} = cords?.coords
-        setCurrentLocation([{key: 'operaHouse', location: {lat: latitude, lng: longitude}}])
+        setCurrentLocation([{key: 'operaHouse', userName: userName, location: {lat: latitude, lng: longitude}}])
         setLoaded(true)
         ws.send(JSON.stringify({lat: latitude, lng: longitude, userName: userName}))
         await getFriends(latitude, longitude)
@@ -36,6 +37,11 @@ const MapBoundry = ({userName}) => {
 
     useEffect(() => {
         if (navigator.geolocation) {
+            if (!storage.getFromCookies("userName")) {
+                ws.onopen = function () {
+                    console.log("Connected to WebSocket server");
+                };
+            }
             navigator.permissions
                 .query({name: "geolocation"})
                 .then((data) => {
@@ -46,7 +52,6 @@ const MapBoundry = ({userName}) => {
                     }
                 })
         }
-
     }, []);
 
     useEffect(() => {
@@ -56,13 +61,13 @@ const MapBoundry = ({userName}) => {
     }, [refresh]);
 
     const getFriends = async (latitude, longitude) => {
-        const response = await axios.get(`${BACKEND_URL}/friends?km=100&lat=${latitude}&lng=${longitude}`)
+        const response = await axios.get(`${BACKEND_URL}/friends?km=1000&lat=${latitude}&lng=${longitude}`)
 
         if (response.status === 200) {
             const nearByFriends = response?.data?.filter((data) => data.Name !== userName)
             nearByFriends?.map((value, index) => {
                 setNearbyFriends((prevState) => [...prevState, {
-                    key: index, location: {
+                    key: index, userName: value.Name, location: {
                         lat: value.Latitude, lng: value.Longitude,
                     },
                 },]);
@@ -70,7 +75,8 @@ const MapBoundry = ({userName}) => {
         }
     }
     return (<>
-        {loaded && (<APIProvider apiKey={"AIzaSyBMa7EA3UcM8XmimYdmPD8i9YQjNEu_PDc"}
+
+        {loaded && (<APIProvider apiKey={MAPS_API_KEY}
                                  onLoad={() => console.log('Maps API has loaded.')}>
             <Map
                 defaultZoom={13}
