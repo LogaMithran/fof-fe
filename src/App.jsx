@@ -12,7 +12,7 @@ function App() {
     const [userName, setUserName] = useState("")
     const [showMaps, setShowMaps] = useState(false)
     const [showLoader, setShowLoader] = useState(false)
-    const {refreshMap} = useContext(MapContext)
+    const {refreshMap, showToast} = useContext(MapContext)
     const [isError, setError] = useState(false)
 
     useEffect(() => {
@@ -85,7 +85,8 @@ function App() {
                         </button>
                     </div>
                 </div>
-                {/*<Toast msg={"Spotted some users nearby"}/>*/}
+                {showToast && (<Toast msg={"Spotted some users nearby"}/>)}
+
             </div>
 
             <div className="pt-50 px-4">

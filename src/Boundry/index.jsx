@@ -10,24 +10,28 @@ import {storage} from "../utils/storage.js";
 const options = {
     enableHighAccuracy: true, timeout: 5000, maximumAge: 0,
 };
+const ws = new WebSocket(WEBSOCKET_URI);
 
 const MapBoundry = ({userName}) => {
     const [currentLocation, setCurrentLocation] = useState([])
     const [loaded, setLoaded] = useState(false)
     const [nearByFriends, setNearbyFriends] = useState([])
 
-    const {refresh} = useContext(MapContext)
-    const ws = new WebSocket(WEBSOCKET_URI);
+    const {refresh, refreshMap, showToastMessage, resetToast} = useContext(MapContext)
+
 
     ws.onmessage = ((ev) => {
         console.log(ev)
+        refreshMap()
+        showToastMessage()
+        setTimeout(() => resetToast(), 2000)
     })
-
     const success = async (cords) => {
         const {latitude, longitude} = cords?.coords
         setCurrentLocation([{key: 'operaHouse', userName: userName, location: {lat: latitude, lng: longitude}}])
         setLoaded(true)
         ws.send(JSON.stringify({lat: latitude, lng: longitude, userName: userName}))
+
         await getFriends(latitude, longitude)
     }
 
@@ -48,12 +52,12 @@ const MapBoundry = ({userName}) => {
                     if (data.state === "denied") {
                         console.log("User position dene")
                     } else if (data.state === "granted" || data.state === "prompt") {
+                        console.log("Providing")
                         navigator.geolocation.getCurrentPosition(success, failure, options)
                     }
                 })
         }
     }, []);
-
     useEffect(() => {
         if (currentLocation?.length && currentLocation[0]?.location?.lng && currentLocation[0]?.location?.lat) {
             getFriends(currentLocation[0]?.location?.lat, currentLocation[0]?.location?.lng).then((data) => (console.log(data)))

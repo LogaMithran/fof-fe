@@ -55,7 +55,7 @@ export const Markers = ({marks, isSelf = false}) => {
                 <Pin
                     background={isSelf ? '#00FF00' : '#FF0000'}
                     borderColor="#000"
-                    glyph={poi?.userName}
+                    glyph={poi?.userName[0]}
                     glyphColor="#000"
                     scale={1.5} // 👈 this increases the pin size
                 >
