@@ -24,7 +24,7 @@ const MapBoundry = ({userName}) => {
         console.log(ev)
         refreshMap()
         showToastMessage()
-        setTimeout(() => resetToast(), 2000)
+        setTimeout(() => resetToast(), 10000)
     })
     const success = async (cords) => {
         const {latitude, longitude} = cords?.coords
